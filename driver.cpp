@@ -181,56 +181,24 @@ int main(int argc, char *argv[])
     pixelWidth = tile_width * grid_length; // updated/reduced width of the image
     pixelHeight = tile_height * grid_length; // updated/reduced height of the image
 
-    NDLMDU011::TileManager tile_manager(grid_length);
-    int x_index = 0, y_index = 0; // Tile coordinates in TileManager tile_board
-    int x_coord = 0, y_coord = 0; // start coordinates of the sub image/tile from the original image 
-
-    while (y_index < grid_length)
-    {
-       // std::cout << "y_index = " << y_index << " x_index = " << x_index << std::endl;
-        unsigned char **tile_pixels = new unsigned char *[tile_height];
-        for (int row = y_coord; row < y_coord + tile_height; ++row)
-        {
-            tile_pixels[row-y_coord] = new unsigned char[tile_width];
-           // std::cout << "row = " << row << " y_coord = " << y_coord << std::endl;
-            for (int col = x_coord; col < x_coord + tile_width; ++col)
-            {
-                //std::cout << "row = " << row << " y_coord = " << y_coord << " col = " << col << " x_coord = " << x_coord<< std::endl;
-            
-                tile_pixels[row - y_coord][col - x_coord] = pixels[row][col];
-            }
-        }
-        std::string fName = "out_image-" + std::to_string(y_index) + std::to_string(x_index) + ".pgm";
-        NDLMDU011::writeImage(tile_width, tile_height, fName, tile_pixels);
-
-        NDLMDU011::Tile tile_image(tile_width, tile_height);
-        tile_image.assignPixels(NDLMDU011::deepCopy(tile_pixels, tile_height, tile_width));
-        tile_manager.addTile(tile_image, x_index, y_index);
-
-        /*for (int i = 0; i < tile_height; ++i)
-        {
-            delete[] tile_pixels[i];
-        }
-        delete[] tile_pixels;*/
-
-        x_index++;
-        x_coord += tile_width;
-        
-        if (x_index >= grid_length)
-        {
-            x_index = 0;
-            y_index++;
-            y_coord += tile_height;
-            x_coord = 0;
-        }
-
-        //std::cout << "Next tile" << std::endl;
-    }
-
+    NDLMDU011::TileManager tile_manager(grid_length, tile_width, tile_height);
+    tile_manager.extractSubTiles(pixels);
+    //NDLMDU011::Tile tile_image(tile_width, tile_height);
     for (int i = 0; i < pixelHeight; ++i)
     {
         delete[] pixels[i];
     }
     delete[] pixels;
+
+    unsigned char **image_pixels = tile_manager.retrieveTileImage();
+    std::string outName = "output.pgm";
+    NDLMDU011::writeImage(pixelWidth, pixelHeight, outName, image_pixels);
+
+    for (int i = 0; i < pixelHeight; ++i)
+    {
+        delete[] image_pixels[i];
+    }
+    delete[] image_pixels;
+
     return 0;
 }
