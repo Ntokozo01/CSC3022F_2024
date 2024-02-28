@@ -70,6 +70,40 @@ NDLMDU011::Tile TManager::getTile(int x_index, int y_index)
     return tile_board[y_index][x_index];
 }
 
+void TManager::swapWith(Directions direction)
+{
+    int x_swap, y_swap; // coordinates of the Tile to swap with in the tile board
+    switch (direction)
+    {
+    case top:
+        x_swap = x_empty;
+        y_swap = y_empty - 1;
+        break;
+    case bottom:
+        x_swap = x_empty;
+        y_swap = y_empty + 1;
+        break;
+    case left:
+        x_swap = x_empty - 1;
+        y_swap = y_empty;
+        break;
+    case right:
+        x_swap = x_empty + 1;
+        y_swap = y_empty;
+        break;
+
+    default:
+        break;
+    }
+
+    Tile temp = tile_board[y_empty][x_empty];
+    tile_board[y_empty][x_empty] = tile_board[y_swap][x_swap];
+    tile_board[y_swap][x_swap] = temp;
+
+    x_empty = x_swap;
+    y_empty = y_swap;
+}
+
 int TManager::extractSubTiles(unsigned char **pixels)
 {
     int x_index = 0, y_index = 0; // Tile coordinates in TileManager tile_board
@@ -110,7 +144,10 @@ int TManager::extractSubTiles(unsigned char **pixels)
 
         // std::cout << "Next tile" << std::endl;
     }
-    tile_board[grid_length - 1][grid_length - 1].setTileEmpty();
+
+    x_empty = grid_length - 1;
+    y_empty = grid_length - 1;
+    tile_board[y_empty][x_empty].setTileEmpty();
 
     return tile_board.size();
 }

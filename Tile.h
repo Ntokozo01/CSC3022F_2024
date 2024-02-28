@@ -6,6 +6,8 @@
 
 namespace NDLMDU011
 {
+    enum Directions {top = 1, bottom, left, right};
+
     class Tile
     {
     private:
@@ -22,7 +24,7 @@ namespace NDLMDU011
         void setTileEmpty(void);
         int getHeight();
         int getWidth();
-        unsigned char ** getTilePixels(void);
+        unsigned char **getTilePixels(void);
         ~Tile();
     };
 
@@ -30,16 +32,17 @@ namespace NDLMDU011
     {
     private:
         std::vector<std::vector<NDLMDU011::Tile>> tile_board;
-        int grid_length;
-        int grid_size;
+        int grid_length, grid_size;
         int tile_width, tile_height;
+        int x_empty, y_empty; // index position of the empty tile in the tile_board
 
     public:
         TileManager();
         TileManager(int grid_length, int tile_width, int tile_height);
         void addTile(Tile tile_image, int x_index, int y_index);
-        int extractSubTiles(unsigned char ** pixels);
-        unsigned char ** retrieveTileImage(void);
+        void swapWith(Directions direction);
+        int extractSubTiles(unsigned char **pixels);
+        unsigned char **retrieveTileImage(void);
         NDLMDU011::Tile getTile(int x_index, int y_index);
         ~TileManager();
     };

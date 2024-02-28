@@ -190,6 +190,12 @@ int main(int argc, char *argv[])
     }
     delete[] pixels;
 
+    tile_manager.swapWith(NDLMDU011::top);
+    tile_manager.swapWith(NDLMDU011::left);
+    tile_manager.swapWith(NDLMDU011::bottom);
+    tile_manager.swapWith(NDLMDU011::right);
+    
+
     unsigned char **image_pixels = tile_manager.retrieveTileImage();
     std::string outName = "output.pgm";
     NDLMDU011::writeImage(pixelWidth, pixelHeight, outName, image_pixels);
