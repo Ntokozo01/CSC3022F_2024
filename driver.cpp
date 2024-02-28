@@ -207,18 +207,21 @@ int main(int argc, char *argv[])
         int randomNumber = 1 + rand() % 4;
         NDLMDU011::Directions randomDirection = (NDLMDU011::Directions)randomNumber;
 
-        success_swaps += tile_manager.swapWith(randomDirection);
-    }
+        if (tile_manager.swapWith(randomDirection))
+        {
+            success_swaps++;
 
-    unsigned char **image_pixels = tile_manager.retrieveTileImage();
-    std::string outName = "output.pgm";
-    NDLMDU011::writeImage(pixelWidth, pixelHeight, outName, image_pixels);
+            unsigned char **image_pixels = tile_manager.retrieveTileImage();
+            std::string outName = "outputImage-" + std::to_string(success_swaps) + ".pgm";
+            NDLMDU011::writeImage(pixelWidth, pixelHeight, outName, image_pixels);
 
-    for (int i = 0; i < pixelHeight; ++i)
-    {
-        delete[] image_pixels[i];
+            for (int i = 0; i < pixelHeight; ++i)
+            {
+                delete[] image_pixels[i];
+            }
+            delete[] image_pixels;
+        }
     }
-    delete[] image_pixels;
 
     return 0;
 }
