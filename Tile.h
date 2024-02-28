@@ -40,7 +40,7 @@ namespace NDLMDU011
         TileManager();
         TileManager(int grid_length, int tile_width, int tile_height);
         void addTile(Tile tile_image, int x_index, int y_index);
-        void swapWith(Directions direction);
+        int swapWith(Directions direction);
         int extractSubTiles(unsigned char **pixels);
         unsigned char **retrieveTileImage(void);
         NDLMDU011::Tile getTile(int x_index, int y_index);

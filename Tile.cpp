@@ -70,7 +70,7 @@ NDLMDU011::Tile TManager::getTile(int x_index, int y_index)
     return tile_board[y_index][x_index];
 }
 
-void TManager::swapWith(Directions direction)
+int TManager::swapWith(Directions direction)
 {
     int x_swap, y_swap; // coordinates of the Tile to swap with in the tile board
     switch (direction)
@@ -96,12 +96,18 @@ void TManager::swapWith(Directions direction)
         break;
     }
 
+    if ((x_swap < 0) || (x_swap >= grid_length) || (y_swap < 0) || (y_swap >= grid_length))
+    {
+        return 0;
+    }
+
     Tile temp = tile_board[y_empty][x_empty];
     tile_board[y_empty][x_empty] = tile_board[y_swap][x_swap];
     tile_board[y_swap][x_swap] = temp;
 
     x_empty = x_swap;
     y_empty = y_swap;
+    return 1;
 }
 
 int TManager::extractSubTiles(unsigned char **pixels)

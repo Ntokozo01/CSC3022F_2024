@@ -3,6 +3,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <cstdlib>
+#include <ctime>
 
 #define Ttile NDLMDU011::Tile
 #define TManager NDLMDU011::TileManager
@@ -42,7 +44,7 @@ void NDLMDU011::writeImage(int width, int height, std::string filename, unsigned
     }
 
     outfile.close();
-    std::cout <<filename <<", image written successfully" << std::endl;
+    std::cout << filename << ", image written successfully" << std::endl;
 }
 /*
 // reads the PGM image binary data from the file and stores it into pixels array
@@ -148,7 +150,7 @@ int main(int argc, char *argv[])
 
     std::getline(fread, line); // get the maximum value of the pixels in this image data usually 255
 
-    char p;//, p1;
+    char p; //, p1;
     /*fread.read(&p1, 1);
     fread.read(&p1, 1);
     fread.read(&p1, 1);
@@ -174,27 +176,39 @@ int main(int argc, char *argv[])
     // std::string outName = "output.pgm";
     // NDLMDU011::writeImage(pixelWidth, pixelHeight, outName, pixels);
 
-    int grid_size = grid_length * grid_length; // number of subdivided image tiles
+    int grid_size = grid_length * grid_length;   // number of subdivided image tiles
     int tile_width = (pixelWidth / grid_length); // the width of a tile from integer division
     int tile_height = pixelHeight / grid_length; // the height of a tile from integer division
 
-    pixelWidth = tile_width * grid_length; // updated/reduced width of the image
+    pixelWidth = tile_width * grid_length;   // updated/reduced width of the image
     pixelHeight = tile_height * grid_length; // updated/reduced height of the image
 
     NDLMDU011::TileManager tile_manager(grid_length, tile_width, tile_height);
     tile_manager.extractSubTiles(pixels);
-    //NDLMDU011::Tile tile_image(tile_width, tile_height);
+    // NDLMDU011::Tile tile_image(tile_width, tile_height);
     for (int i = 0; i < pixelHeight; ++i)
     {
         delete[] pixels[i];
     }
     delete[] pixels;
 
-    tile_manager.swapWith(NDLMDU011::top);
+    /*tile_manager.swapWith(NDLMDU011::top);
     tile_manager.swapWith(NDLMDU011::left);
     tile_manager.swapWith(NDLMDU011::bottom);
-    tile_manager.swapWith(NDLMDU011::right);
-    
+    tile_manager.swapWith(NDLMDU011::right);*/
+
+    // Seed the random number generator with the current time
+    srand(static_cast<unsigned int>(time(nullptr)));
+
+    int success_swaps = 0;
+    while (success_swaps < numberOfMoves)
+    {
+        // Generate and print a random number
+        int randomNumber = 1 + rand() % 4;
+        NDLMDU011::Directions randomDirection = (NDLMDU011::Directions)randomNumber;
+
+        success_swaps += tile_manager.swapWith(randomDirection);
+    }
 
     unsigned char **image_pixels = tile_manager.retrieveTileImage();
     std::string outName = "output.pgm";
