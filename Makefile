@@ -30,6 +30,9 @@ $(TARGET): $(OBJS)
 run: $(TARGET)
 	./$(TARGET) $(options)
 
-# Clean target
+.PHONY: clean
+
+# Clean target to clean all compiled object files and executable file and remove generated PGM images 
 clean:
 	rm -f $(OBJS) $(TARGET)
+	find . -type f -name '*.pgm' ! \( -name 'raytrace.pgm' -o -name 'mona512.pgm' -o -name 'steelb.pgm' \) -exec rm {} +

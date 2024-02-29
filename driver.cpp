@@ -31,85 +31,41 @@ void NDLMDU011::writeImage(int width, int height, std::string filename, unsigned
     outfile << width << " " << height << std::endl;
     outfile << 255 << std::endl;
 
-    // Write the binary data of the image the frames to image file
-    // outfile.write(reinterpret_cast<char *>(pixels), pixelHeight * pixelWidth);
+    // Write the binary data of the image 1-bit at a time
+    // outfile.write(reinterpret_cast<char *>(pixels), image_height * image_width);
     for (int i = 0; i < height; ++i)
     {
         for (int j = 0; j < width; ++j)
         {
             outfile.write((char *)&array[i][j], 1);
-            // std::cout << (0 + pixels[i][j]) << " ";
         }
-        // std::cout << std::endl;
     }
 
     outfile.close();
     std::cout << filename << ", image written successfully" << std::endl;
 }
-/*
-// reads the PGM image binary data from the file and stores it into pixels array
-void readPGMImage(std::string filename)
-{
-    std::ifstream fread(filename, std::fstream::binary);
-
-    std::cout << "Reading file: " << filename << std::endl;
-    std::string line;
-    std::getline(fread, line); // get the Magic number of input image which is "P5"
-
-    // std::cout << line << std::endl;
-    int pixelWidth, pixelHeight;
-    fread >> pixelWidth >> pixelHeight;
-
-    imageHeight = pixelHeight;
-    imageWidth = pixelWidth;
-
-    std::getline(fread, line); // get the maximum value of the pixels in this image data usually 255
-
-    char p, p1;
-    fread.read(&p1, 1);
-    fread.read(&p1, 1);
-    fread.read(&p1, 1);
-    fread.read(&p1, 1);
-
-    for (int i = 0; i < pixelHeight; ++i)
-    {
-        for (int j = 0; j < pixelWidth; ++j)
-        {
-            fread.read(&p, 1);
-            pixels[i][j] = static_cast<unsigned char>(p);
-            //  std::cout << (0 + pixels[i][j]) << " ";
-        }
-        // std::cout << std::endl;
-    }
-    // fread.read(reinterpret_cast<char *>(pixels[0]), pixelWidth * pixelHeight);
-    std::cout << "Pixels read successful " << std::endl;
-}*/
 
 int main(int argc, char *argv[])
 {
     int grid_length = 0, numberOfMoves = 0;
     std::string inputImage;
 
+    // Extract the input values from the command line
     if (argc >= 7)
     {
         int i = 0;
         while (i < argc)
         {
-            // std::cout << i << " " << argv[i] << std::endl;
-
             if (std::string(argv[i]) == "-s")
             {
-                // std::cout << i << " " << argv[i] << std::endl;
                 grid_length = std::stoi(argv[++i]);
             }
             else if (std::string(argv[i]) == "-i")
             {
-                // std::cout << i << " " << argv[i] << std::endl;
                 inputImage = argv[++i];
             }
             else if (std::string(argv[i]) == "-n")
             {
-                // std::cout << i << " " << argv[i] << std::endl;
                 numberOfMoves = std::stoi(argv[++i]);
             }
             i++;
@@ -125,68 +81,57 @@ int main(int argc, char *argv[])
     std::cout << "PGM Image " << inputImage << std::endl;
     std::cout << "Number of Moves " << numberOfMoves << std::endl;*/
 
-    unsigned char **pixels;
-    std::ifstream fread(inputImage, std::fstream::binary);
+    unsigned char **pixels; // represent a 2D array for the image pixels of the input image
 
+    // Read the PGM input image and save the data in the appropriate variables
+    std::ifstream file_reader(inputImage, std::fstream::binary);
     std::cout << "Reading file: " << inputImage << std::endl;
     std::string line;
-    std::getline(fread, line); // get the Magic number of input image which is "P5"
+    std::getline(file_reader, line); // get the Magic number of input image which is "P5"
 
-    std::getline(fread, line);
-    while (line[0] == '#')
+    // Read the next line and check if it is a comment line, repeats until the line read is not a comment
+    std::getline(file_reader, line);
+    while (line[0] == '#') // comment lines start with the character '#'
     {
-        std::getline(fread, line);
+        std::getline(file_reader, line);
     }
 
+    // Next line after comments is the image dimensions line which is width and height, extracts it from the line
     std::istringstream iss(line);
-    // std::cout << line << std::endl;
-    int pixelWidth, pixelHeight;
-    iss >> pixelWidth >> pixelHeight;
+    int image_width, image_height;
+    iss >> image_width >> image_height;
 
-    pixels = new unsigned char *[pixelHeight];
+    std::getline(file_reader, line); // get the maximum value of the pixels in this image data usually 255
 
-    // imageHeight = pixelHeight;
-    // imageWidth = pixelWidth;
-
-    std::getline(fread, line); // get the maximum value of the pixels in this image data usually 255
-
-    char p; //, p1;
-    /*fread.read(&p1, 1);
-    fread.read(&p1, 1);
-    fread.read(&p1, 1);
-    fread.read(&p1, 1);*/
-
-    // char * array = new char[pixelHeight * pixelWidth];
-    // fread.read(array, pixelHeight*pixelWidth);
-
-    for (int i = 0; i < pixelHeight; ++i)
+    pixels = new unsigned char *[image_height];
+    // read each pixel value as 1 byte char and cast it into the unsigned char value to store it in the pixels array
+    char p;
+    for (int i = 0; i < image_height; ++i)
     {
-        pixels[i] = new unsigned char[pixelWidth];
-        for (int j = 0; j < pixelWidth; ++j)
+        pixels[i] = new unsigned char[image_width];
+        for (int j = 0; j < image_width; ++j)
         {
-            fread.read(&p, 1);
+            file_reader.read(&p, 1);
             pixels[i][j] = static_cast<unsigned char>(p);
-            // std::cout << (0 + pixels[i][j]) << " ";
-            // std::cout << (0 + array[i*pixelWidth + j]) << " ";
         }
-        // std::cout << std::endl;
     }
-    // fread.read(reinterpret_cast<char *>(pixels[0]), pixelWidth * pixelHeight);
-    // std::cout << "Pixels read successful " << std::endl;
-    // std::string outName = "output.pgm";
-    // NDLMDU011::writeImage(pixelWidth, pixelHeight, outName, pixels);
 
-    int grid_size = grid_length * grid_length;   // number of subdivided image tiles
-    int tile_width = (pixelWidth / grid_length); // the width of a tile from integer division
-    int tile_height = pixelHeight / grid_length; // the height of a tile from integer division
+    //print2DArray(pixels, 0,image_width, 0, image_height);
 
-    pixelWidth = tile_width * grid_length;   // updated/reduced width of the image
-    pixelHeight = tile_height * grid_length; // updated/reduced height of the image
+    int grid_size = grid_length * grid_length;    // number of subdivided image tiles
+    int tile_width = (image_width / grid_length); // the width of a tile from integer division
+    int tile_height = image_height / grid_length; // the height of a tile from integer division
 
+    image_width = tile_width * grid_length;   // updated/reduced width of the image
+    image_height = tile_height * grid_length; // updated/reduced height of the image
+
+    // Create a TileManager object for Tile objects of the image based on the grid length
     NDLMDU011::TileManager tile_manager(grid_length, tile_width, tile_height);
+    // Sub-divide the Image pixels by grid_size times into Tile objects and store the tiles in TileManager
     tile_manager.extractSubTiles(pixels);
-    // NDLMDU011::Tile tile_image(tile_width, tile_height);
-    for (int i = 0; i < pixelHeight; ++i)
+
+    // Free the memory that was allocated to the pixels array
+    for (int i = 0; i < image_height; ++i)
     {
         delete[] pixels[i];
     }
@@ -197,25 +142,28 @@ int main(int argc, char *argv[])
     tile_manager.swapWith(NDLMDU011::bottom);
     tile_manager.swapWith(NDLMDU011::right);*/
 
-    // Seed the random number generator with the current time
+    // Set the random number generator starting value (seed) based on with the current time
     srand(static_cast<unsigned int>(time(nullptr)));
 
     int success_swaps = 0;
     while (success_swaps < numberOfMoves)
     {
-        // Generate and print a random number
+        // Generate a random number between 1 and 4 (inclusive)
         int randomNumber = 1 + rand() % 4;
+        // Cast the generated random number into a corresponding Direction enum object
         NDLMDU011::Directions randomDirection = (NDLMDU011::Directions)randomNumber;
 
+        // Swap the empty tile with that in the specified direction and check whether if swap was successful to write out an image and make another move
         if (tile_manager.swapWith(randomDirection))
         {
             success_swaps++;
-
+            //std::cout << "Writing tiles" << std::endl;
             unsigned char **image_pixels = tile_manager.retrieveTileImage();
             std::string outName = "outputImage-" + std::to_string(success_swaps) + ".pgm";
-            NDLMDU011::writeImage(pixelWidth, pixelHeight, outName, image_pixels);
+            NDLMDU011::writeImage(image_width, image_height, outName, image_pixels);
 
-            for (int i = 0; i < pixelHeight; ++i)
+            // Free the memory space for image_pixels representing the image state after a move 
+            for (int i = 0; i < image_height; ++i)
             {
                 delete[] image_pixels[i];
             }
