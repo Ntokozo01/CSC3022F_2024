@@ -50,12 +50,14 @@ void NDLMDU011::writeImage(int width, int height, std::string filename, unsigned
 
 void writeSummaryImage(std::string filename, int moves, int image_width, int image_height)
 {
-    std::cout << "Vector size = " << summary_pixels.size() << std::endl;
-    int width_scaling = ceil(sqrt(moves));
-    int height_scaling = floor(sqrt(moves));
+    const int border_size = 10;
 
-    int summary_width = width_scaling * image_width;
-    int summary_height = height_scaling * image_height;
+    // std::cout << "Vector size = " << summary_pixels.size() << std::endl;
+    int width_scaling = ceil(sqrt(moves));
+    int height_scaling = round(sqrt(moves));
+
+    int summary_width = width_scaling * image_width + width_scaling * border_size;
+    int summary_height = height_scaling * image_height + height_scaling * border_size;
 
     std::ofstream outfile(filename, std::ios::binary);
 
@@ -64,25 +66,43 @@ void writeSummaryImage(std::string filename, int moves, int image_width, int ima
     outfile << summary_width << " " << summary_height << std::endl;
     outfile << 255 << std::endl;
 
-    int image_index = 0;
+    char white = 255;
+    char white_arr[border_size]; // = {white};
+    std::fill_n(white_arr, border_size, white);
 
-    /*for (int row = 0; row < summary_height; ++row){
-        for (int col = 0; col < summary_width; ++col){
-            image_index = row / image_width + col;
-            outfile.write((char *)&summ_pixels[], 1);
-        }
-    }*/
-
+    // loops through the // loops through the images in summary_pixels vector for next vertical alignment
     for (int out_row = 0; out_row < height_scaling; ++out_row)
     {
+        // loops through the rows of the horizontal images to write their pixels to the file
         for (int row = 0; row < image_height; ++row)
         {
+            // loops through the images in summary_pixels vector for horizontal images
             for (int col = 0; col < width_scaling; ++col)
             {
+                int image_iterator = out_row * width_scaling + col;
+                // Writes the row pixels of a single image
                 for (int pix = 0; pix < image_width; ++pix)
                 {
-                    outfile.write((char *)&summary_pixels[out_row * width_scaling + col][row][pix], 1);
+                    if (image_iterator < moves)
+                    {
+                        outfile.write((char *)&summary_pixels[image_iterator][row][pix], 1);
+                    }
+                    else
+                    {
+                        // Writes a white pixel to fill up the box image
+                        outfile.write(&white, 1);
+                    }
                 }
+                // Adds the whiter border between images horizontally
+                outfile.write(white_arr, border_size);
+            }
+        }
+        // Adds the white border between images vertically
+        for (int j = 0; j < border_size; ++j)
+        {
+            for (int k = 0; k < summary_width; ++k)
+            {
+                outfile.write(&white, 1);
             }
         }
     }
@@ -191,6 +211,12 @@ int main(int argc, char *argv[])
     srand(static_cast<unsigned int>(time(nullptr)));
 
     int success_swaps = 0;
+    unsigned char **image_pixels = tile_manager.retrieveTileImage();
+    std::string outName = "outputImage-" + std::to_string(success_swaps) + ".pgm";
+    NDLMDU011::writeImage(image_width, image_height, outName, image_pixels);
+
+    summary_pixels.push_back(image_pixels);
+
     while (success_swaps < numberOfMoves)
     {
         // Generate a random number between 1 and 4 (inclusive)
@@ -208,8 +234,8 @@ int main(int argc, char *argv[])
             NDLMDU011::writeImage(image_width, image_height, outName, image_pixels);
 
             summary_pixels.push_back(image_pixels);
-            std::cout << "Vector size = " << summary_pixels.size() << std::endl;
-            // Free the memory space for image_pixels representing the image state after a move
+            // std::cout << "Vector size = " << summary_pixels.size() << std::endl;
+            //  Free the memory space for image_pixels representing the image state after a move
             /*for (int i = 0; i < image_height; ++i)
             {
                 delete[] image_pixels[i];
@@ -217,7 +243,8 @@ int main(int argc, char *argv[])
             delete[] image_pixels;*/
         }
     }
-    writeSummaryImage("Summary.pgm", numberOfMoves, image_width, image_height);
+
+    writeSummaryImage("Summary.pgm", ++numberOfMoves, image_width, image_height);
     for (int i = 0; i < numberOfMoves; i++)
     {
         for (int j = 0; j < image_height; ++j)
