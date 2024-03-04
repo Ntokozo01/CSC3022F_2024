@@ -5,9 +5,12 @@
 #include <sstream>
 #include <cstdlib>
 #include <ctime>
+#include <math.h>
 
 #define Ttile NDLMDU011::Tile
 #define TManager NDLMDU011::TileManager
+
+std::vector<unsigned char **> summary_pixels;
 
 void print2DArray(unsigned char **pixels, int x_start, int x_end, int y_start, int y_end)
 {
@@ -41,6 +44,48 @@ void NDLMDU011::writeImage(int width, int height, std::string filename, unsigned
         }
     }
 
+    outfile.close();
+    std::cout << filename << ", image written successfully" << std::endl;
+}
+
+void writeSummaryImage(std::string filename, int moves, int image_width, int image_height)
+{
+    std::cout << "Vector size = " << summary_pixels.size() << std::endl;
+    int width_scaling = ceil(sqrt(moves));
+    int height_scaling = floor(sqrt(moves));
+
+    int summary_width = width_scaling * image_width;
+    int summary_height = height_scaling * image_height;
+
+    std::ofstream outfile(filename, std::ios::binary);
+
+    // Write the header information of the .pgm file
+    outfile << "P5" << std::endl;
+    outfile << summary_width << " " << summary_height << std::endl;
+    outfile << 255 << std::endl;
+
+    int image_index = 0;
+
+    /*for (int row = 0; row < summary_height; ++row){
+        for (int col = 0; col < summary_width; ++col){
+            image_index = row / image_width + col;
+            outfile.write((char *)&summ_pixels[], 1);
+        }
+    }*/
+
+    for (int out_row = 0; out_row < height_scaling; ++out_row)
+    {
+        for (int row = 0; row < image_height; ++row)
+        {
+            for (int col = 0; col < width_scaling; ++col)
+            {
+                for (int pix = 0; pix < image_width; ++pix)
+                {
+                    outfile.write((char *)&summary_pixels[out_row * width_scaling + col][row][pix], 1);
+                }
+            }
+        }
+    }
     outfile.close();
     std::cout << filename << ", image written successfully" << std::endl;
 }
@@ -116,7 +161,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    //print2DArray(pixels, 0,image_width, 0, image_height);
+    // print2DArray(pixels, 0,image_width, 0, image_height);
 
     int grid_size = grid_length * grid_length;    // number of subdivided image tiles
     int tile_width = (image_width / grid_length); // the width of a tile from integer division
@@ -157,18 +202,29 @@ int main(int argc, char *argv[])
         if (tile_manager.swapWith(randomDirection))
         {
             success_swaps++;
-            //std::cout << "Writing tiles" << std::endl;
+            // std::cout << "Writing tiles" << std::endl;
             unsigned char **image_pixels = tile_manager.retrieveTileImage();
             std::string outName = "outputImage-" + std::to_string(success_swaps) + ".pgm";
             NDLMDU011::writeImage(image_width, image_height, outName, image_pixels);
 
-            // Free the memory space for image_pixels representing the image state after a move 
-            for (int i = 0; i < image_height; ++i)
+            summary_pixels.push_back(image_pixels);
+            std::cout << "Vector size = " << summary_pixels.size() << std::endl;
+            // Free the memory space for image_pixels representing the image state after a move
+            /*for (int i = 0; i < image_height; ++i)
             {
                 delete[] image_pixels[i];
             }
-            delete[] image_pixels;
+            delete[] image_pixels;*/
         }
+    }
+    writeSummaryImage("Summary.pgm", numberOfMoves, image_width, image_height);
+    for (int i = 0; i < numberOfMoves; i++)
+    {
+        for (int j = 0; j < image_height; ++j)
+        {
+            delete[] summary_pixels[i][j];
+        }
+        delete[] summary_pixels[i];
     }
 
     return 0;
