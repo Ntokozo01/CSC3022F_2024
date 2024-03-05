@@ -5,7 +5,7 @@
 
 #define Ttile NDLMDU011::Tile
 #define TManager NDLMDU011::TileManager
-#define u_char unsigned char
+
 
 Ttile::Tile() { Tile(0, 0); }
 
@@ -214,11 +214,7 @@ u_char **TManager::retrieveTileImage(void)
     while (y_index < grid_length)
     {
         Tile *tile_image = getTile(x_index, y_index);
-        //bool is_null = (tile_image == nullptr);
-        //std::cout << "Is null: " << is_null << std::endl;
         u_char **tile_pixels = tile_image->getTilePixels();
-        //is_null = (tile_pixels == nullptr);
-        //std::cout << tile_image->getHeight() << " " << tile_image->getWidth()<< std::endl;
 
         for (int row = y_coord; row < y_coord + tile_height; ++row)
         {

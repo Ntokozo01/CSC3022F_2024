@@ -3,6 +3,7 @@
 
 #ifndef _TILE_H
 #define _TILE_H
+#define u_char unsigned char
 
 namespace NDLMDU011
 {
@@ -55,11 +56,10 @@ namespace NDLMDU011
     };
 
     unsigned char **transferArray(unsigned char **arrOrig, int height, int width);
-    void print2DArray(int x_start, int x_end, int y_start, int y_end);
     void readPGMImage(std::string filename, unsigned char **pixels, int &pixel_width, int &pixel_height);
     void writeImage(int width, int height, std::string filename, unsigned char **array);
 
-    void writeSummaryImage(std::string filename, int moves, int image_width, int image_height);
+    void writeSummaryImage(std::string filename, int moves, int image_width, int image_height, int border_size);
 }
 
 #endif
