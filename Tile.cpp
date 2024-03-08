@@ -30,19 +30,6 @@ int Ttile::getWidth()
 
 u_char **Ttile::getTilePixels(void)
 {
-    /*u_char **arrCopy = new u_char *[height];
-
-    for (int i = 0; i < height; i++)
-    {
-        arrCopy[i] = new u_char[width];
-
-        for (int j = 0; j < width; j++)
-        {
-            arrCopy[i][j] = pixels[i][j];
-        }
-    }
-
-    return arrCopy;*/
     return pixels;
 }
 
@@ -73,11 +60,11 @@ Ttile::~Tile()
 {
     // std::cout << "Tile destructor called" << std::endl;
     int height = getHeight();
-    /*for (int i = 0; i < height; i++)
-    {
-        delete[] pixels;
+    for (int i = 0; i < height; i++)
+    {   
+        delete[] pixels[i];
     }
-    delete[] pixels;*/
+    delete[] pixels;
 }
 
 // Sets the attributes values and resize the tile_board to store the Tile pointers
@@ -200,7 +187,7 @@ int TManager::extractSubTiles(u_char **pixels)
     y_empty = grid_length - 1;
     tile_board[y_empty][x_empty]->setTileEmpty();
 
-    return tile_board.size();
+    return tile_board.size() * tile_board[0].size();
 }
 
 u_char **TManager::retrieveTileImage(void)

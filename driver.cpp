@@ -10,10 +10,10 @@
 #define Ttile NDLMDU011::Tile
 #define TManager NDLMDU011::TileManager
 
-std::vector<unsigned char **> summary_pixels; // Container for the Generated Images pixels after each move
+std::vector<u_char **> summary_pixels; // Container for the Generated Images pixels after each move
 
 // Write out the pgm image char-by-char
-void NDLMDU011::writeImage(int width, int height, std::string filename, unsigned char **array)
+void NDLMDU011::writeImage(int width, int height, std::string filename, u_char **array)
 {
     std::ofstream outfile(filename, std::ios::binary);
 
@@ -164,7 +164,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    unsigned char **pixels; // represent a 2D array for the image pixels of the input image
+    u_char **pixels; // represent a 2D array for the image pixels of the input image
     int image_width, image_height;
 
     // Read the PGM input image and save the data in the appropriate variables
@@ -186,16 +186,16 @@ int main(int argc, char *argv[])
 
     std::getline(file_reader, line); // get the maximum value of the pixels in this image data usually 255
 
-    pixels = new unsigned char *[image_height];
-    // read each pixel value as 1 byte char and cast it into the unsigned char value to store it in the pixels array
+    pixels = new u_char *[image_height];
+    // read each pixel value as 1 byte char and cast it into the u_char value to store it in the pixels array
     char p;
     for (int i = 0; i < image_height; ++i)
     {
-        pixels[i] = new unsigned char[image_width];
+        pixels[i] = new u_char[image_width];
         for (int j = 0; j < image_width; ++j)
         {
             file_reader.read(&p, 1);
-            pixels[i][j] = static_cast<unsigned char>(p);
+            pixels[i][j] = static_cast<u_char>(p);
         }
     }
 
@@ -222,7 +222,7 @@ int main(int argc, char *argv[])
     srand(static_cast<unsigned int>(time(nullptr)));
 
     int success_swaps = 0;
-    unsigned char **image_pixels = tile_manager.retrieveTileImage();
+    u_char **image_pixels = tile_manager.retrieveTileImage();
     std::string outName = output_image + "-" + std::to_string(success_swaps) + ".pgm";
     NDLMDU011::writeImage(image_width, image_height, outName, image_pixels);
 
@@ -239,7 +239,7 @@ int main(int argc, char *argv[])
         if (tile_manager.swapWith(randomDirection))
         {
             success_swaps++; 
-            unsigned char **image_pixels = tile_manager.retrieveTileImage();
+            u_char **image_pixels = tile_manager.retrieveTileImage();
             std::string outName = output_image + "-" + std::to_string(success_swaps) + ".pgm";
             NDLMDU011::writeImage(image_width, image_height, outName, image_pixels);
 
@@ -248,6 +248,7 @@ int main(int argc, char *argv[])
     }
 
     writeSummaryImage(summary_image, ++numberOfMoves, image_width, image_height, border_size);
+    //Clean the Summary_pixels vector contained arrays
     for (int i = 0; i < numberOfMoves; i++)
     {
         for (int j = 0; j < image_height; ++j)
