@@ -10,8 +10,9 @@
 #define Ttile NDLMDU011::Tile
 #define TManager NDLMDU011::TileManager
 
-std::vector<unsigned char **> summary_pixels;
+std::vector<unsigned char **> summary_pixels; // Container for the Generated Images pixels after each move
 
+// Write out the pgm image char-by-char
 void NDLMDU011::writeImage(int width, int height, std::string filename, unsigned char **array)
 {
     std::ofstream outfile(filename, std::ios::binary);
@@ -22,7 +23,6 @@ void NDLMDU011::writeImage(int width, int height, std::string filename, unsigned
     outfile << 255 << std::endl;
 
     // Write the binary data of the image 1-bit at a time
-    // outfile.write(reinterpret_cast<char *>(pixels), image_height * image_width);
     for (int i = 0; i < height; ++i)
     {
         for (int j = 0; j < width; ++j)
@@ -32,18 +32,18 @@ void NDLMDU011::writeImage(int width, int height, std::string filename, unsigned
         }
         // std::cout << std::endl;
     }
-
     outfile.close();
     std::cout << filename << ", image written successfully" << std::endl;
 }
 
 void writeSummaryImage(std::string filename, int moves, int image_width, int image_height, int border_size)
 {
-    // std::cout << "Vector size = " << summary_pixels.size() << std::endl;
-    int width_scaling = ceil(sqrt(moves));
-    int height_scaling = round(sqrt(moves));
+    int width_scaling = ceil(sqrt(moves)); // Calculates the number of images to be aligned vertically in a box manner
+    int height_scaling = round(sqrt(moves)); // Calculates the number of images to be aligned horizontally in a box manner
 
-    int summary_width = width_scaling * image_width + (width_scaling + 1) * border_size;
+    //Calculate the new summary image dimensions based on number of images to be aligned and border/margin space between them
+    // (scaling + 1) to include the top or left margin before images
+    int summary_width = width_scaling * image_width + (width_scaling + 1) * border_size; 
     int summary_height = height_scaling * image_height + (height_scaling + 1) * border_size;
 
     std::ofstream outfile(filename, std::ios::binary);
@@ -53,9 +53,9 @@ void writeSummaryImage(std::string filename, int moves, int image_width, int ima
     outfile << summary_width << " " << summary_height << std::endl;
     outfile << 255 << std::endl;
 
-    char white = 255;
+    char white = 255; // represents a white character or pixel
     char white_arr[border_size]; // = {white};
-    std::fill_n(white_arr, border_size, white);
+    std::fill_n(white_arr, border_size, white); // Fill the array with char 255 for white pixels
 
     // Adds the white border between images vertically
     for (int j = 0; j < border_size; ++j)
@@ -66,8 +66,8 @@ void writeSummaryImage(std::string filename, int moves, int image_width, int ima
         }
     }
 
-    // loops through the // loops through the images in summary_pixels vector for next vertical alignment
-    for (int out_row = 0; out_row < height_scaling; ++out_row)
+    // loops through the images in summary_pixels vector for next vertical (row) alignment 
+    for (int summary_row = 0; summary_row < height_scaling; ++summary_row)
     {
         // loops through the rows of the horizontal images to write their pixels to the file
         for (int row = 0; row < image_height; ++row)
@@ -78,7 +78,7 @@ void writeSummaryImage(std::string filename, int moves, int image_width, int ima
             // loops through the images in summary_pixels vector for horizontal images
             for (int col = 0; col < width_scaling; ++col)
             {
-                int image_iterator = out_row * width_scaling + col;
+                int image_iterator = summary_row * width_scaling + col; // switching index between the images in the vector
                 // Writes the row pixels of a single image
                 for (int pix = 0; pix < image_width; ++pix)
                 {
@@ -113,11 +113,11 @@ int main(int argc, char *argv[])
 {
     int grid_length = 0, numberOfMoves = 0;
     std::string inputImage, output_image;
-    std::string summary_image;
+    std::string summary_image = "Summary_image.pgm"; //set a default Summary Image name
     int border_size = 10; // set a default value for images margin value in summary image
 
     // Extract the input values from the command line
-    if (argc >= 7)
+    if (argc >= 8)
     {
         int i = 0;
         while (i < argc)
@@ -125,15 +125,23 @@ int main(int argc, char *argv[])
             if (std::string(argv[i]) == "-s")
             {
                 grid_length = std::stoi(argv[++i]);
+                grid_length = std::max(grid_length, 2); // Disallow grid length less than 2
             }
             else if (std::string(argv[i]) == "-i")
             {
                 // The base name of the output images
                 output_image = argv[++i];
+
+                int period = output_image.find_last_of(".");
+                if (period > 0){
+                    output_image = output_image.substr(0,period);
+                }
             }
             else if (std::string(argv[i]) == "-n")
             {
                 numberOfMoves = std::stoi(argv[++i]);
+                numberOfMoves = std::max(numberOfMoves, 0); // Discard moves less than 0
+
             }
             else if (std::string(argv[i]) == "-x")
             {
@@ -143,8 +151,8 @@ int main(int argc, char *argv[])
             else if (std::string(argv[i]) == "-m")
             {
                 border_size = std::stoi(argv[++i]);
+                border_size = std::max(border_size, 0); // Don't accept negative values
             }
-
             i++;
         }
         // Extract the input image name with .pgm extension as the last argument from command line parameters

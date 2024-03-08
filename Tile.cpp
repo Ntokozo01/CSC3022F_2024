@@ -6,12 +6,11 @@
 #define Ttile NDLMDU011::Tile
 #define TManager NDLMDU011::TileManager
 
-
 Ttile::Tile() { Tile(0, 0); }
 
 Ttile::Tile(int width, int height) : width(width), height(height)
 {
-    //std::cout << ++NDLMDU011::count << ". Tile constructor called" << std::endl;
+    // std::cout << ++NDLMDU011::count << ". Tile constructor called" << std::endl;
 }
 
 void Ttile::assignPixels(u_char **tile_pixels)
@@ -31,6 +30,19 @@ int Ttile::getWidth()
 
 u_char **Ttile::getTilePixels(void)
 {
+    /*u_char **arrCopy = new u_char *[height];
+
+    for (int i = 0; i < height; i++)
+    {
+        arrCopy[i] = new u_char[width];
+
+        for (int j = 0; j < width; j++)
+        {
+            arrCopy[i][j] = pixels[i][j];
+        }
+    }
+
+    return arrCopy;*/
     return pixels;
 }
 
@@ -59,9 +71,8 @@ void Ttile::setTileEmpty(void)
 
 Ttile::~Tile()
 {
-    //std::cout << "Tile destructor called" << std::endl;
+    // std::cout << "Tile destructor called" << std::endl;
     int height = getHeight();
-
     /*for (int i = 0; i < height; i++)
     {
         delete[] pixels;
@@ -78,11 +89,11 @@ TManager::TileManager(int grid_length, int tile_width, int tile_height)
 
 /**
  * Add the pointer to Tile object to the tile_board at position of indices x_index and y_index
- * @param tile_image : a reference object for the dynamically allocated Tile 
+ * @param tile_image : a reference object for the dynamically allocated Tile
  * @param x_index : horizontal/x-coordinate of the tile in tile_board
  * @param y_index : vertical/y-coordinate of the tile in tile_board
  */
-void TManager::addTile(Tile& tile_image, int x_index, int y_index)
+void TManager::addTile(Tile &tile_image, int x_index, int y_index)
 {
     tile_board[y_index][x_index] = &tile_image;
 }
@@ -150,9 +161,9 @@ int TManager::swapWith(Directions direction)
 
 int TManager::extractSubTiles(u_char **pixels)
 {
-   // std::cout << "Extracting subTiles" << std::endl;
+    // std::cout << "Extracting subTiles" << std::endl;
     int x_index = 0, y_index = 0; // Tile coordinates in TileManager tile_board
-    int x_coord = 0, y_coord = 0; // start coordinates of the sub image/tile from the original image
+    int x_coord = 0, y_coord = 0; // start coordinates of the pixels for the sub image/tile from the original image
 
     while (y_index < grid_length)
     {
@@ -166,30 +177,25 @@ int TManager::extractSubTiles(u_char **pixels)
             }
         }
 
-        NDLMDU011::Tile* tile_image = new Tile(tile_width, tile_height);
+        // Create a new tile, add the pixels for the sub-tile and save it to the tile_board
+        NDLMDU011::Tile *tile_image = new Tile(tile_width, tile_height);
         tile_image->assignPixels(NDLMDU011::transferArray(tile_pixels, tile_height, tile_width));
         tile_board[y_index][x_index] = tile_image;
 
-        // tile_board[y_index][x_index]->assignPixels(NDLMDU011::transferArray(tile_pixels, tile_height, tile_width));
-        // tile_board[y_index][x_index]->setHeight(tile_height);
-        // tile_board[y_index][x_index]->setWidth(tile_width);
+        x_index++;             // Moves to the right index for the next tile in the tile board
+        x_coord += tile_width; // advance to the leftmost pixel for the next tile in the row
 
-        //tile_image.assignPixels(NDLMDU011::transferArray(tile_pixels, tile_height, tile_width));
-        //addTile(tile_image, x_index, y_index);
-
-        x_index++;
-        x_coord += tile_width;
-
+        // When done with tiles in the one row, advance to the next row and first leftmost index for a new tile
         if (x_index >= grid_length)
         {
-            x_index = 0;
-            y_index++;
-            y_coord += tile_height;
-            x_coord = 0;
+            x_index = 0;            // leftmost tile in the tile_board for row y_index
+            y_index++;              // move to the next row in the tile board
+            y_coord += tile_height; // Advance to read the tiles for the new row images
+            x_coord = 0;            // leftmost pixel for the new tile from the original image
         }
     }
-    //std::cout << "Tiles extracted successfully" << std::endl;
-    // Set the last (bottom right) tile on the tile_board as empty tile and its pixel value as 0 for black
+
+    //  Set the last (bottom-right) tile on the tile_board as empty tile and its pixel value as 0 for black
     x_empty = grid_length - 1;
     y_empty = grid_length - 1;
     tile_board[y_empty][x_empty]->setTileEmpty();
@@ -202,6 +208,7 @@ u_char **TManager::retrieveTileImage(void)
     int image_width = tile_width * grid_length;
     int image_height = tile_height * grid_length;
 
+    // Declare a new array of the same size as pixels read from the input image to compile all tile pixels together
     u_char **image_pixels = new u_char *[image_height];
     for (int k = 0; k < image_height; ++k)
     {
@@ -209,17 +216,18 @@ u_char **TManager::retrieveTileImage(void)
     }
 
     int x_index = 0, y_index = 0; // Tile coordinates in TileManager tile_board
-    int x_coord = 0, y_coord = 0; // start coordinates of the sub image/tile from the original image
+    int x_coord = 0, y_coord = 0; // start coordinates of the pixels for  the sub image/tile to the outputimage
 
     while (y_index < grid_length)
     {
-        Tile *tile_image = getTile(x_index, y_index);
-        u_char **tile_pixels = tile_image->getTilePixels();
+        Tile *tile_image = getTile(x_index, y_index);       // get the pointer to the tile from the tile_board
+        u_char **tile_pixels = tile_image->getTilePixels(); // get the array of pixels for the tile
 
         for (int row = y_coord; row < y_coord + tile_height; ++row)
         {
             for (int col = x_coord; col < x_coord + tile_width; ++col)
             {
+                // Copy the pixels from the tile to the output pixel array
                 image_pixels[row][col] = tile_pixels[row - y_coord][col - x_coord];
             }
         }
@@ -241,15 +249,18 @@ u_char **TManager::retrieveTileImage(void)
 
 TManager::~TileManager()
 {
-   // std::cout << "Tile manager destructor called" << std::endl;
-    for (int i = 0; i < grid_length; ++i){
-        for (int j = 0; j < grid_length; ++j){
+    // std::cout << "Tile manager destructor called" << std::endl;
+    // Delete the dynamically allocated Tile objects from the tile_board
+    for (int i = 0; i < grid_length; ++i)
+    {
+        for (int j = 0; j < grid_length; ++j)
+        {
             delete tile_board[i][j];
         }
-
     }
 }
 
+// Transfer/Move the array to another array
 u_char **NDLMDU011::transferArray(u_char **arrOrig, int height, int width)
 {
     u_char **arrCopy = new u_char *[height];

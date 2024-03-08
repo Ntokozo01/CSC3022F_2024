@@ -27,8 +27,9 @@ $(TARGET): $(OBJS)
 	$(CC) -c $< -o $@ $(CFLAGS)
 
 # Run the target file
+# make run options="-s 4 -n 15 -i mona.pgm" inputFileImage="mona512.pgm" 
 run: $(TARGET)
-	./$(TARGET) $(options)
+	./$(TARGET) $(options) $(inputFileImage)
 
 .PHONY: clean
 

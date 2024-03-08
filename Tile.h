@@ -26,13 +26,13 @@ namespace NDLMDU011
     public:
         Tile();
         Tile(int width, int height);
-        void assignPixels(unsigned char **tile_pixels);
+        void assignPixels(u_char **tile_pixels);
         void setTileEmpty(void);
         void setHeight(int height);
         void setWidth(int width);
         int getHeight();
         int getWidth();
-        unsigned char **getTilePixels(void);
+        u_char **getTilePixels(void);
         ~Tile();
     };
 
@@ -50,7 +50,7 @@ namespace NDLMDU011
         void addTile(Tile &tile_image, int x_index, int y_index);
         int swapWith(Directions direction);
         int extractSubTiles(unsigned char **pixels);
-        unsigned char **retrieveTileImage(void);
+        u_char **retrieveTileImage(void);
         NDLMDU011::Tile *getTile(int x_index, int y_index);
         ~TileManager();
     };
